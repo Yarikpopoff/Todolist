@@ -69,7 +69,9 @@ var ToDoList = React.createClass({
 			};
 			return el;
 		});
-		this.setState({ records: newRecords });
+		this.setState({ records: newRecords}, function() {
+			this.updateLocalStorage()
+		});
 	},
 
 	handleChange: function(event) {
@@ -104,6 +106,7 @@ var ToDoList = React.createClass({
 				});
 			};
 		};
+		
 		return (
 			<div className="to-do-list">
 				<div className="record-add">
