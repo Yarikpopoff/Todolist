@@ -16,7 +16,7 @@ var ToDoList = React.createClass({
 	
 	getInitialState: function() {
 		return {
-			filter: false,
+			filter: 1, // 1-all, 2-new, 3-done
 			newText: '',
 			records: [] 
 		};
@@ -31,7 +31,7 @@ var ToDoList = React.createClass({
 	},
 
 	add: function() {
-		var newText = this.refs.newText.value;
+		var newText = this.state.newText;
 		var newId = Math.random().toString().slice(-10);
 		var newRecord = {
 			id: newId,
@@ -40,27 +40,30 @@ var ToDoList = React.createClass({
 		};
 		var newRecords = this.state.records.slice();
 		newRecords.push(newRecord);
-		this.setState({ records: newRecords });
+		this.setState({ newText: '', records: newRecords });
 	},
 	
 	all: function() {
-		this.getFromLocalStorage();
+		// this.getFromLocalStorage();
+		this.setState({ filter: 1 });		
 	},
 
 	new: function() {
-		var localRecords = JSON.parse(localStorage.getItem('records'));
-		var newRecords = localRecords.filter(function(el) {
-			return el.status == false;
-		});
-		this.setState({ filter: true, records: newRecords });
+		// var localRecords = JSON.parse(localStorage.getItem('records'));
+		// var newRecords = localRecords.filter(function(el) {
+			// return el.status == false;
+		// });
+		// this.setState({ filter: true, records: newRecords });
+		this.setState({ filter: 2 });		
 	},
 
 	completed: function() {
-		var localRecords = JSON.parse(localStorage.getItem('records'));		
-		var newRecords = localRecords.filter(function(el) {
-			return el.status == true;
-		});
-		this.setState({ filter: true, records: newRecords });
+		// var localRecords = JSON.parse(localStorage.getItem('records'));		
+		// var newRecords = localRecords.filter(function(el) {
+			// return el.status == true;
+		// });
+		// this.setState({ filter: true, records: newRecords });
+		this.setState({ filter: 3 });		
 	},
 
 	handleDelete: function(record) {
@@ -80,11 +83,15 @@ var ToDoList = React.createClass({
 		this.setState({ records: newRecords });
 	},
 
+	handleChange: function(event) {
+		this.setState({newText: event.target.value});
+	},
+
 	updateLocalStorage: function() {
-		if (!this.state.filter) {
+		// if (!this.state.filter) {
 			var records = JSON.stringify(this.state.records);
 			localStorage.setItem('records', records);
-		};
+		// };
 	},
 
 	getFromLocalStorage: function() {
@@ -97,6 +104,22 @@ var ToDoList = React.createClass({
 		var handleDelete = this.handleDelete;
 		var handleToggle = this.handleToggle;
 
+		var temp;
+		
+		if (this.state.filter == 1) {
+			temp = this.state.records;
+		} else
+				if (this.state.filter == 2) {
+					temp = this.state.records.filter(function(el) {
+						return !el.status;
+					});
+				} else
+					if (this.state.filter == 3) {
+						temp = this.state.records.filter(function(el) {
+							return el.status;
+						});
+					};
+
 		return (
 			<div className="to-do-list">
 				<div className="record-add">
@@ -104,12 +127,13 @@ var ToDoList = React.createClass({
 					<input 
 						type="text" 
 						placeholder="What you need to do?"
-						ref="newText">
+						value={this.state.newText}
+						onChange={this.handleChange}>
 					</input>
 					<button onClick={this.add}>Add</button>
 				</div>
 				<ul> {
-						this.state.records.map(function(el, i) {
+						temp.map(function(el, i) {
 							return (
 								<ToDoRecord 
 									key={ i }
