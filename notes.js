@@ -22,12 +22,8 @@ var ToDoList = React.createClass({
 		};
 	},
 
-	componentDidMount: function() {
+	componentWillMount: function() {
 		this.getFromLocalStorage();
-	},
-
-	componentDidUpdate: function() {
-		this.updateLocalStorage();
 	},
 
 	add: function() {
@@ -40,37 +36,30 @@ var ToDoList = React.createClass({
 		};
 		var newRecords = this.state.records.slice();
 		newRecords.push(newRecord);
-		this.setState({ newText: '', records: newRecords });
+		this.setState({ newText: '', records: newRecords }, function() {
+			this.updateLocalStorage();
+		});
 	},
 	
 	all: function() {
-		// this.getFromLocalStorage();
 		this.setState({ filter: 1 });		
 	},
 
 	new: function() {
-		// var localRecords = JSON.parse(localStorage.getItem('records'));
-		// var newRecords = localRecords.filter(function(el) {
-			// return el.status == false;
-		// });
-		// this.setState({ filter: true, records: newRecords });
 		this.setState({ filter: 2 });		
 	},
 
 	completed: function() {
-		// var localRecords = JSON.parse(localStorage.getItem('records'));		
-		// var newRecords = localRecords.filter(function(el) {
-			// return el.status == true;
-		// });
-		// this.setState({ filter: true, records: newRecords });
 		this.setState({ filter: 3 });		
 	},
 
-	handleDelete: function(record) {
+	handleDelete: function(record, i) {
 		var newRecords = this.state.records.filter(function(el) {
 			return record.id !== el.id;
 		});
-		this.setState({ records: newRecords });
+		this.setState({ records: newRecords }, function() {
+			this.updateLocalStorage()
+		});
 	},
 
 	handleToggle: function(record) {
@@ -88,15 +77,13 @@ var ToDoList = React.createClass({
 	},
 
 	updateLocalStorage: function() {
-		// if (!this.state.filter) {
-			var records = JSON.stringify(this.state.records);
-			localStorage.setItem('records', records);
-		// };
+		var records = JSON.stringify(this.state.records);
+		localStorage.setItem('records', records);
 	},
 
 	getFromLocalStorage: function() {
 		var localRecords = JSON.parse(localStorage.getItem('records'));
-		this.setState({ filter: false, records: localRecords ? localRecords : [] });
+		this.setState({ records: localRecords ? localRecords : [] });
 	},
 
 	render: function () {
@@ -104,22 +91,19 @@ var ToDoList = React.createClass({
 		var handleDelete = this.handleDelete;
 		var handleToggle = this.handleToggle;
 
-		var temp;
+		var temp = this.state.records;
 		
-		if (this.state.filter == 1) {
-			temp = this.state.records;
-		} else
-				if (this.state.filter == 2) {
-					temp = this.state.records.filter(function(el) {
-						return !el.status;
-					});
-				} else
-					if (this.state.filter == 3) {
-						temp = this.state.records.filter(function(el) {
-							return el.status;
-						});
-					};
-
+		if (this.state.filter == 2) {
+			temp = this.state.records.filter(function(el) {
+				return !el.status;
+			});
+		} else {
+			if (this.state.filter == 3) {
+				temp = this.state.records.filter(function(el) {
+					return el.status;
+				});
+			};
+		};
 		return (
 			<div className="to-do-list">
 				<div className="record-add">
@@ -141,7 +125,7 @@ var ToDoList = React.createClass({
 									markerClass={el.status ? "marker-ok" : "marker-new"} 
 									text={el.text} 
 									textClass={el.status ? "record-text text-ok" : "	record-text text-new"} 
-									onDelete={handleDelete.bind(null, el)} 
+									onDelete={handleDelete.bind(null, el, i)} 
 									onToggle={handleToggle.bind(null, el)}>
 								</ToDoRecord>
 							);
